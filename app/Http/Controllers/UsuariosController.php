@@ -157,8 +157,10 @@ public function exportExcel(Request $request)
     return Excel::download(new UsuariosExport($usuarios), 'usuarios.xlsx');
 }
 // UsuariosController.php
-public function showGraph()
+public function showGraph(Request $request)
 {
+    $buscar = $request->input('buscar');
+
     $response = Http::get('http://localhost:3001/api/usuarios/');
 
     if (!$response->successful()) {
@@ -167,17 +169,27 @@ public function showGraph()
 
     $usuarios = collect($response->json());
 
-    // Contar usuarios por tipo
+    // Aplicar filtro si hay un criterio de búsqueda
+    if ($buscar) {
+        $usuarios = $usuarios->filter(function ($usuario) use ($buscar) {
+            return stripos($usuario['nombre'], $buscar) !== false ||
+                   stripos($usuario['email'], $buscar) !== false ||
+                   stripos($usuario['telefono'], $buscar) !== false ||
+                   stripos($usuario['tipo_usuario'], $buscar) !== false;
+        });
+    }
+
+    // Contar usuarios por tipo después de filtrar
     $datosGrafica = $usuarios->groupBy('tipo_usuario')->map->count();
 
-    // Verificar si hay datos
     if ($datosGrafica->isEmpty()) {
         return redirect()->back()->with('error', 'No hay datos para mostrar en la gráfica');
     }
 
     return view('admin.usuarios_grafica', [
         'labels' => json_encode($datosGrafica->keys()->toArray()),
-        'data' => json_encode($datosGrafica->values()->toArray())
+        'data' => json_encode($datosGrafica->values()->toArray()),
+        'buscar' => $buscar
     ]);
 }
 }

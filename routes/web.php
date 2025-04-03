@@ -21,8 +21,8 @@ use App\Http\Controllers\AccesosController;
 
 // Ruta principal
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('dashboard');
+})->name('dashboard');
 
 Route::get('/login', [AuthController::class, 'mostrarFormularioLogin'])->name('iniciar_sesion');
 Route::post('/iniciar-sesion', [AuthController::class, 'iniciarSesion'])->name('iniciar_sesion.post');
@@ -100,3 +100,5 @@ Route::get('/usuarios-grafica', [UsuariosController::class, 'showGraph'])->name(
 Route::get('/torniquetes-grafica', [TorniquetesController::class, 'showGraph'])->name('torniquetes.grafica');
 
 Route::get('/accesos-grafica', [AccesosController::class, 'showGraph'])->name('accesos.graficas');
+
+

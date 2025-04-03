@@ -154,25 +154,36 @@ class AccesosController extends Controller
         }
     }
     // AccesosController.php
-public function showGraph()
-{
-    $response = Http::get('http://localhost:3001/api/accesos');
+    public function showGraph(Request $request)
+    {
+        $search = strtolower($request->input('search', ''));
+        $response = Http::get('http://localhost:3001/api/accesos');
 
-    if (!$response->successful()) {
-        return redirect()->back()->with('error', 'Error al obtener datos para la gráfica');
+        if (!$response->successful()) {
+            return redirect()->back()->with('error', 'Error al obtener datos para la gráfica');
+        }
+
+        $accesos = collect($response->json());
+
+        // Filtrar si hay un término de búsqueda
+        if ($search) {
+            $accesos = $accesos->filter(fn($item) =>
+                stripos($item['usuario_nombre'] ?? '', $search) !== false ||
+                stripos($item['torniquete_ubicacion'] ?? '', $search) !== false ||
+                stripos($item['estado'] ?? '', $search) !== false
+            );
+        }
+
+        // Procesar datos para diferentes gráficas
+        $datosEstados = $accesos->groupBy('estado')->map->count();
+        $datosTorniquetes = $accesos->groupBy('torniquete_ubicacion')->map->count();
+
+        return view('admin.accesos_grafica', [
+            'search' => $search,
+            'estadosLabels' => $datosEstados->keys()->toArray(),
+            'estadosData' => $datosEstados->values()->toArray(),
+            'torniquetesLabels' => $datosTorniquetes->keys()->toArray(),
+            'torniquetesData' => $datosTorniquetes->values()->toArray()
+        ]);
     }
-
-    $accesos = collect($response->json());
-
-    // Procesar datos para diferentes gráficas
-    $datosEstados = $accesos->groupBy('estado')->map->count();
-    $datosTorniquetes = $accesos->groupBy('torniquete_ubicacion')->map->count();
-
-    return view('admin.accesos_grafica', [
-        'estadosLabels' => $datosEstados->keys()->toArray(),
-        'estadosData' => $datosEstados->values()->toArray(),
-        'torniquetesLabels' => $datosTorniquetes->keys()->toArray(),
-        'torniquetesData' => $datosTorniquetes->values()->toArray()
-    ]);
-}
 }

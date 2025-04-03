@@ -13,33 +13,37 @@ class TorniquetesController extends Controller
 {
     public function getData(Request $request)
     {
-        $response = Http::get('http://localhost:3001/api/torniquetes/');
+        try {
+            $response = Http::get('http://localhost:3001/api/torniquetes/');
 
-        if ($response->successful()) {
-            $torniquetes = collect($response->json());
+            if ($response->successful()) {
+                $torniquetes = collect($response->json());
 
-            // Aplicar búsqueda si hay un término ingresado
-            if ($request->has('search') && !empty($request->search)) {
-                $search = strtolower($request->search);
-                $torniquetes = $torniquetes->filter(function ($item) use ($search) {
-                    return stripos(strtolower($item['ubicacion']), $search) !== false ||
-                           stripos(strtolower($item['estado']), $search) !== false ||
-                           stripos(strtolower($item['tipo']), $search) !== false;
-                });
+                // Aplicar búsqueda si hay un término ingresado
+                if ($request->filled('search')) {
+                    $search = strtolower($request->search);
+                    $torniquetes = $torniquetes->filter(function ($item) use ($search) {
+                        return stripos(strtolower($item['ubicacion']), $search) !== false ||
+                               stripos(strtolower($item['estado']), $search) !== false ||
+                               stripos(strtolower($item['tipo']), $search) !== false;
+                    });
+                }
+
+                // Paginación
+                $currentPage = LengthAwarePaginator::resolveCurrentPage();
+                $perPage = 5;
+                $currentItems = $torniquetes->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+                $torniquetes = new LengthAwarePaginator($currentItems, $torniquetes->count(), $perPage);
+                $torniquetes->setPath(url()->current())->appends($request->query());
+
+                return view('admin.torniquetes', compact('torniquetes'));
             }
 
-            // Paginación
-            $currentPage = LengthAwarePaginator::resolveCurrentPage();
-            $perPage = 5;
-            $currentItems = $torniquetes->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-            $torniquetes = new LengthAwarePaginator($currentItems, $torniquetes->count(), $perPage);
-            $torniquetes->setPath(route('torniquetes'))->appends($request->query()); // Mantiene filtros en la paginación
-
-            return view('admin.torniquetes', compact('torniquetes'));
+            return redirect()->back()->with('error', 'Error al consultar la API');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error inesperado: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('error', 'Error al consultar la API');
     }
 
     public function getData2($id)
@@ -74,8 +78,7 @@ class TorniquetesController extends Controller
                 return redirect()->route('torniquetes')->with('success', 'Torniquete creado correctamente');
             }
 
-            $errorMessage = $response->json()['error'] ?? 'Error desconocido';
-            return redirect()->back()->with('error', 'Error al crear el torniquete: ' . $errorMessage);
+            return redirect()->back()->with('error', 'Error al crear el torniquete.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error inesperado: ' . $e->getMessage());
         }
@@ -101,24 +104,32 @@ class TorniquetesController extends Controller
             'tipo' => 'sometimes|required|string|max:100',
         ]);
 
-        $response = Http::put("http://localhost:3001/api/torniquetes/{$id}", $data);
+        try {
+            $response = Http::put("http://localhost:3001/api/torniquetes/{$id}", $data);
 
-        if ($response->successful()) {
-            return redirect()->route('torniquetes')->with('success', 'Datos actualizados correctamente');
+            if ($response->successful()) {
+                return redirect()->route('torniquetes')->with('success', 'Datos actualizados correctamente');
+            }
+
+            return redirect()->back()->with('error', 'Error al actualizar los datos');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error inesperado: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('error', 'Error al actualizar los datos');
     }
 
     public function deleteData($id)
     {
-        $response = Http::delete("http://localhost:3001/api/torniquetes/{$id}");
+        try {
+            $response = Http::delete("http://localhost:3001/api/torniquetes/{$id}");
 
-        if ($response->successful()) {
-            return redirect()->route('torniquetes')->with('success', 'Torniquete eliminado correctamente');
+            if ($response->successful()) {
+                return redirect()->route('torniquetes')->with('success', 'Torniquete eliminado correctamente');
+            }
+
+            return redirect()->back()->with('error', 'Error al eliminar el torniquete');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error inesperado: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('error', 'Error al eliminar el torniquete');
     }
 
     public function importExcel(Request $request)
@@ -134,49 +145,64 @@ class TorniquetesController extends Controller
             return redirect()->back()->with('error', 'Error al importar archivo: ' . $e->getMessage());
         }
     }
+
     public function exportExcel(Request $request)
     {
-        // Obtener los datos desde la API
-        $response = Http::get('http://localhost:3001/api/torniquetes/');
+        try {
+            $response = Http::get('http://localhost:3001/api/torniquetes/');
 
-        if ($response->successful()) {
-            $torniquetes = collect($response->json());
+            if ($response->successful()) {
+                $torniquetes = collect($response->json());
 
-            // Aplicar búsqueda si hay un término ingresado
-            if ($request->has('search') && !empty($request->search)) {
-                $search = strtolower($request->search);
-                $torniquetes = $torniquetes->filter(function ($item) use ($search) {
-                    return stripos(strtolower($item['ubicacion']), $search) !== false ||
-                           stripos(strtolower($item['estado']), $search) !== false ||
-                           stripos(strtolower($item['tipo']), $search) !== false;
-                });
+                if ($request->filled('search')) {
+                    $search = strtolower($request->search);
+                    $torniquetes = $torniquetes->filter(function ($item) use ($search) {
+                        return stripos(strtolower($item['ubicacion']), $search) !== false ||
+                               stripos(strtolower($item['estado']), $search) !== false ||
+                               stripos(strtolower($item['tipo']), $search) !== false;
+                    });
+                }
+
+                return Excel::download(new TorniquetesExport($torniquetes), 'torniquetes.xlsx');
             }
 
-            // Descargar solo los resultados filtrados
-            return Excel::download(new TorniquetesExport($torniquetes), 'torniquetes.xlsx');
+            return redirect()->back()->with('error', 'Error al consultar la API');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error inesperado: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('error', 'Error al consultar la API');
     }
 
-
-public function showGraph()
-{
-    $response = Http::get('http://localhost:3001/api/torniquetes/');
-
-    if (!$response->successful()) {
-        return redirect()->back()->with('error', 'Error al obtener datos para la gráfica');
+    public function showGraph(Request $request)
+    {
+        try {
+            $buscar = $request->input('buscar');
+            $response = Http::get('http://localhost:3001/api/torniquetes/');
+    
+            if (!$response->successful()) {
+                return redirect()->back()->with('error', 'Error al obtener datos para la gráfica');
+            }
+    
+            $torniquetes = collect($response->json());
+    
+            // Filtrar datos según la búsqueda
+            if ($buscar) {
+                $torniquetes = $torniquetes->filter(function ($item) use ($buscar) {
+                    return stripos(strtolower($item['ubicacion']), $buscar) !== false ||
+                           stripos(strtolower($item['estado']), $buscar) !== false ||
+                           stripos(strtolower($item['tipo']), $buscar) !== false;
+                });
+            }
+    
+            // Preparar datos para la gráfica
+            $datosGrafica = $torniquetes->groupBy('estado')->map->count();
+    
+            return view('admin.torniquetes_grafica', [
+                'labels' => json_encode($datosGrafica->keys()->toArray()),
+                'data' => json_encode($datosGrafica->values()->toArray()),
+                'buscar' => $buscar
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error inesperado: ' . $e->getMessage());
+        }
     }
-
-    $torniquetes = collect($response->json());
-
-    // Contar torniquetes por estado (Activo/Inactivo)
-    $datosGrafica = $torniquetes->groupBy('estado')->map->count();
-
-    return view('admin.torniquetes_grafica', [
-        'labels' => json_encode($datosGrafica->keys()->toArray()),
-        'data' => json_encode($datosGrafica->values()->toArray())
-    ]);
-}
-
 }

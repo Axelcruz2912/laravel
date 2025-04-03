@@ -120,9 +120,16 @@ h2 {
 <body>
     <nav class="navbar">
         <ul class="nav-links">
-            <li><a href="index.html">Volver</a></li>
-            <li><a href="aboutus.html">Sobre Nosotros</a></li>
-            <li><a href="contactanos.html">Contactanos</a></li>
+            @if(session('tipo_usuario') === 'admin')
+                <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+            @elseif(session('tipo_usuario') === 'visitante')
+                <li><a href="{{ route('visitante.dashboard') }}">Dashboard</a></li>
+            @elseif(session('tipo_usuario') === 'alumno')
+                <li><a href="{{ route('alumno.dashboard') }}"> Dashboard</a></li>
+            @endif
+
+            <li><a href="{{ route('about') }}">Sobre Nosotros</a></li>
+            <li><a href="{{ route('contactanos') }}">Contáctanos</a></li>
         </ul>
         <div class="logo">IoT QR Access</div>
     </nav>

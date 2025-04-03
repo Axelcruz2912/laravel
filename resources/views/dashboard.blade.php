@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scankey</title>
   <style>
-    /* Reseteo y altura total de la página */
     html, body {
       height: 100%;
       margin: 0;
@@ -14,7 +13,6 @@
       background: #F5F5DC;
     }
 
-    /* Contenedor principal para que el footer se quede al fondo */
     .content-wrapper {
       min-height: calc(100vh - 60px);
       box-sizing: border-box;
@@ -22,58 +20,64 @@
       flex-direction: column;
     }
 
-    /* Encabezado / Navbar */
     .navbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 15px 30px;
       background: #3C3633;
+      position: relative;
+    }
+
+    .logo {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      font-weight: bold;
+      color: #747254;
     }
 
     .nav-links {
       list-style: none;
       display: flex;
       gap: 20px;
-      margin: 0;
-      padding: 0;
-    }
-
-    .nav-links li {
-      display: inline;
     }
 
     .nav-links li a {
       text-decoration: none;
       color: #747254;
       font-weight: bold;
+      position: relative;
       transition: color 0.3s ease-in-out;
+    }
+
+    .nav-links li a::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -3px;
+      width: 0;
+      height: 2px;
+      background-color: white;
+      transition: all 0.3s ease-in-out;
+      transform: translateX(-50%);
     }
 
     .nav-links li a:hover {
       color: white;
     }
 
-    .logo {
-      flex-grow: 1;
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
+    .nav-links li a:hover::after {
+      width: 100%;
+    }
+
+    .icons a {
+      text-decoration: none;
       color: #747254;
+      margin-left: 15px;
     }
 
-    .user-section {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .user-section span {
-      color: #F5F5DC;
-      font-weight: bold;
-    }
-
-    /* Botón de Cerrar Sesión */
     .logout-btn {
       padding: 10px 20px;
       background-color: #e74c3c;
@@ -90,7 +94,6 @@
       background-color: #c0392b;
     }
 
-    /* Sección principal */
     .hero {
       display: flex;
       justify-content: space-between;
@@ -128,7 +131,6 @@
       border-radius: 5px;
     }
 
-    /* Pie de página */
     .footer-banner {
       height: 60px;
       display: flex;
@@ -143,7 +145,6 @@
       margin-top: 30px;
     }
 
-    /* Ajustes responsivos */
     @media (max-width: 768px) {
       .hero {
         flex-direction: column;
@@ -153,33 +154,28 @@
       .slider-container {
         max-width: 300px;
       }
-
-      .navbar {
-        flex-direction: column;
-      }
-
-      .nav-links {
-        flex-direction: column;
-        align-items: center;
-        padding: 10px 0;
-      }
     }
   </style>
 </head>
 <body>
   <div class="content-wrapper">
     <nav class="navbar">
-      <ul class="nav-links">
-        <li><a href="{{route('usuarios') }}">Lista de Usuarios</a></li>
-        <li><a href="{{route('torniquetes') }}">Torniquetes</a></li>
-        <li><a href="{{route('accesos')}}">Accesos</a></li>
-      </ul>
       <div class="logo">Scankey</div>
-      <div class="user-section">
-        <span>Admin</span>
-        <form action="{{ route('cerrar_sesion') }}" method="POST">
+      <ul class="nav-links">
+        <li><a href="{{ route('about') }}">Sobre nosotros</a></li>
+        <li><a href="{{ route('contactanos') }}">Contáctanos</a></li>
+        <li><a href="{{ route('codigo') }}">Nuestro Proyecto</a></li>
+      </ul>
+
+      <div class="auth-buttons" style="display: flex; gap: 15px;">
+        <form action="{{ route('registrarse') }}" method="GET">
           @csrf
-          <button type="submit" class="logout-btn">Cerrar Sesión</button>
+          <button type="submit" class="logout-btn">Registrate</button>
+        </form>
+
+        <form action="{{ route('iniciar_sesion') }}" method="GET">
+          @csrf
+          <button type="submit" class="logout-btn">Iniciar Sesión</button>
         </form>
       </div>
     </nav>
@@ -187,8 +183,11 @@
     <section class="hero">
       <div class="text-content">
         <h1>¡Mucho gusto!</h1>
-        <h4>Somos Axel, Aranza y Gael, desarrolladores apasionados por la tecnología.</h4>
-        <p>En Scankey, llevamos la seguridad y la innovación a otro nivel...</p>
+        <h4>Somos Axel, Aranza y Gael, desarrolladores apasionados por la tecnología. Juntos para crear soluciones innovadoras que marcan la diferencia.</h4>
+        <p>En Scankey, llevamos la seguridad y la innovación a otro nivel. Nuestro sistema de acceso con códigos QR dinámicos permite una validación rápida, segura y sin contacto. Olvídate de las tarjetas de acceso tradicionales: ahora, con solo tu celular, puedes generar un código único que cambia en cada escaneo, evitando fraudes y accesos no autorizados.</p>
+        <p>🔹 Ágil, seguro y fácil de usar.</p>
+        <p>🔹 Ideal para eventos, empresas y edificios inteligentes.</p>
+        <p>🔹 Integración con dispositivos IoT para una gestión automatizada.</p>
       </div>
 
       <div class="slider-container">

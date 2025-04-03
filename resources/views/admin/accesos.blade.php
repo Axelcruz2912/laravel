@@ -33,7 +33,7 @@
                 <a href="{{ route('accesos_crear') }}" class="btn btn-success btn-sm">
                     <i class="bi bi-plus-circle"></i> Nuevo acceso
                 </a>
-                <a href="{{ route('accesos.graficas') }}" class="btn btn-info btn-sm">
+                <a href="{{ route('accesos.graficas', ['search' => request('search')]) }}" class="btn btn-info btn-sm" role="button">
                     <i class="bi bi-bar-chart"></i> Gráficas
                 </a>
             </div>

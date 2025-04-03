@@ -32,7 +32,7 @@
                 <a href="{{ route('crear_usuario') }}" class="btn btn-success btn-sm">
                     <i class="bi bi-plus-circle"></i> Crear Usuario
                 </a>
-                <a href="{{ route('usuarios.grafica') }}" class="btn btn-info btn-sm">
+                <a href="{{ route('usuarios.grafica', ['buscar' => request('buscar')]) }}" class="btn btn-info btn-sm">
                     <i class="bi bi-bar-chart"></i> Gráficas
                 </a>
             </div>

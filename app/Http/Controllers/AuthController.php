@@ -90,7 +90,7 @@ class AuthController extends Controller
     public function cerrarSesion()
     {
         Session::flush();
-        return redirect()->route('iniciar_sesion');
+        return redirect()->route('dashboard');
     }
 
     public function mostrarFormularioLogin()
